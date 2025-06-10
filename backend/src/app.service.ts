@@ -56,16 +56,29 @@ export class AppService {
 
       // digits
       // it should work for consecutive digits as well
-      if (isDigit(ch)) {
-        let numberString = ch;
-        i++;
-        while (i < expression.length && isDigit(expression[i])) {
-          numberString += expression[i];
-          i++;
+      if (isDigit(ch) || (ch === "." && isDigit(expression[i + 1]))) {
+        let numberString = "";
+        let dotCount = 0;
+
+        // read digits and at most one decimal point
+        while (
+          i < expression.length &&
+          (isDigit(expression[i]) || expression[i] === ".")
+        ) {
+          if (expression[i] === ".") {
+            dotCount++;
+            if (dotCount > 1) {
+              throw new BadRequestException(
+                `Invalid number format near '${numberString}.'`
+              );
+            }
+          }
+          numberString += expression[i++];
         }
+
         tokens.push({
           type: TokenType.Number,
-          value: parseInt(numberString, 10),
+          value: parseFloat(numberString),
         });
         continue;
       }
