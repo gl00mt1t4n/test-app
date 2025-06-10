@@ -109,7 +109,7 @@ export class AppService {
         continue;
       }
       // anything else should throw bad request error
-      throw new BadRequestException(`Unknown Character ${ch}`);
+      throw new BadRequestException(`Unknown character ${ch}`);
     }
 
     return tokens;
@@ -136,30 +136,44 @@ export class AppService {
 
     // PASS 1 for parantheses
     while (containsLPar(tokens)) {
-      let types = tokens.map(t => t.type); // inline function to get array of only token types
+      let types = tokens.map((t) => t.type); // inline function to get array of only token types
       let openIndex = types.lastIndexOf(TokenType.LPar);
       // we now got the last open bracket, match it with the first closed bracket and keep evaluating
 
       let closeIndex = types.indexOf(TokenType.RPar, openIndex + 1);
       // checks for close parantheses only after last open bracket
-      
+
       if (closeIndex === -1) {
         throw new BadRequestException("Missing closing parantheses");
       }
 
       // extract inner tokens
       let innerTokens = tokens.slice(openIndex + 1, closeIndex);
-      
+
       //Map the tokens back into an expression
-      let innerExpression: string = innerTokens.map(t => (t.type === TokenType.Number)? t.value!.toString() :t.type).join('');
+      let innerExpression: string = innerTokens
+        .map((t) =>
+          t.type === TokenType.Number ? t.value!.toString() : t.type
+        )
+        .join("");
 
       // recursive call
       let innerValue = this.evaluateExpression(innerExpression);
 
       // set this value inside the original array
-      tokens.splice(openIndex, closeIndex - openIndex + 1, {type: TokenType.Number, value: innerValue});
+      tokens.splice(openIndex, closeIndex - openIndex + 1, {
+        type: TokenType.Number,
+        value: innerValue,
+      });
     }
 
+    if (
+      tokens.length === 0 || // nothing left
+      tokens.length % 2 === 0 || // even number of tokens → ends on operator
+      tokens[tokens.length - 1].type !== TokenType.Number // last token must be a number
+    ) {
+      throw new BadRequestException("Malformed expression");
+    }
     // Below is Pass 2 and 3 for /* and +- respectively
 
     let newTokens: Token[] = [tokens[0]];
@@ -191,7 +205,7 @@ export class AppService {
     }
     tokens = newTokens;
     // We now have an expression which only consists of +- operators as all the /* have been taken care of and placed back into the array in the order in which the operations should have occurred.
-    
+
     // PASS 3
     let [first, ...rest] = tokens;
     let result = first.value!;
