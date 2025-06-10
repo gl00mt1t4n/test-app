@@ -40,3 +40,40 @@
 .read-the-docs {
   color: #888;
 }
+
+/* space the form and heading */
+h1 {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* give the form a little breathing room */
+form {
+  margin-bottom: 1.5rem;
+}
+
+/* style the result box */
+.result {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/* style error similarly */
+.error {
+  margin-top: 1rem;
+  color: #c00;
+  text-align: center;
+}
+
+/* center the overall container */
+#app-container {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+form input {
+  margin-bottom: 1.5rem;
+}
