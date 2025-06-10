@@ -58,6 +58,21 @@ describe("Calculator (AppController) E2E for POST/evaluate", () => {
         expect(res.body.message).toMatch(/Unknown character/);
       }));
 
+  it("should handle decimal numbers correctly", () =>
+    evaluate("12.5+3.75")
+      .expect(201)
+      .expect((res) => {
+        expect(res.body).toEqual({ result: 16.25 });
+      }));
+
+  it("should return 400 for malformed decimal input", () =>
+    evaluate("1.2.3+4")
+      .expect(400)
+      .expect((res) => {
+        // our tokenizer throws “Invalid number format …”
+        expect(res.body.message).toMatch(/Invalid number format/);
+      }));
+
   it("/ (GET)", () => {
     return request(app.getHttpServer())
       .get("/")
