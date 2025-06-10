@@ -140,10 +140,8 @@ export class AppService {
     - Left parantheses means counter += 1
     - Right means counter -= 1
     - if counter comes back to 0, zip the terms between open and close parantheses and then call evaluate expression on it again
-    - stubbing it for now
     2) basic precedence/conditional passes for /* and +-
     
-    // STUBBING PARANTHESES 
 
     */
 
