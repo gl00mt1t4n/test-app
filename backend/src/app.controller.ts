@@ -13,6 +13,7 @@ export class AppController {
   // Post method under /evaluate which reads the body of the json request under 'expression' field and returns the same thing. Only a function stub for now
   @Post('evaluate')
   evaluate(@Body('expression')expr: string) {
-    return {result: expr};
+  const result = this.appService.evaluateExpression(expr);
+  return {result};
   }
 }
