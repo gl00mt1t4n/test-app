@@ -73,6 +73,20 @@ describe("Calculator (AppController) E2E for POST/evaluate", () => {
         expect(res.body.message).toMatch(/Invalid number format/);
       }));
 
+  it("should divide non-zero correctly", () =>
+    evaluate("10/2")
+      .expect(201)
+      .expect((res) => {
+        expect(res.body).toEqual({ result: 5 });
+      }));
+
+  it("should return 400 on division by zero", () =>
+    evaluate("5/0")
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.message).toMatch(/Division by 0 is infinity/);
+      }));
+
   it("/ (GET)", () => {
     return request(app.getHttpServer())
       .get("/")

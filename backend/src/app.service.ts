@@ -209,6 +209,11 @@ export class AppService {
       ) {
         const leftVal = newTokens[newTokens.length - 1].value!;
         const rightVal = right.value!;
+        if (operator.type === TokenType.Divide) {
+          if (rightVal === 0) {
+            throw new BadRequestException('Division by 0 is infinity')
+          }
+        }
         const combined =
           operator.type === TokenType.Multiply
             ? leftVal * rightVal
