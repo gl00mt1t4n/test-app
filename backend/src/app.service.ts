@@ -31,6 +31,7 @@ export class AppService {
     let tokens: Token[] = [];
     let i = 0;
     while (i < expression.length) {
+      // RULES
       // Skip spaces
       // Throw error if not a number/symbol
       // read numbers (including decimals, but implement it later)
@@ -106,6 +107,63 @@ export class AppService {
   }
 
   evaluateExpression(expression: string): number {
-    return 0;
+    // step 1 is to get the Token type array
+    let tokens = this.tokenizeExpression(expression);
+  
+    // our approach is going to be like so: 3 Passes over the tokenized array for parantheses, /*, +- with the function being called recursively inside each parantheses pair. We want only a single term to remain inside the parantheses, and eventually the entire term. We will use the ... operator to zip parantheses/operators into a single value
+
+    /*
+    1) Parantheses:
+    - have a counter set to 0
+    - Left parantheses means counter += 1
+    - Right means counter -= 1
+    - if counter comes back to 0, zip the terms between open and close parantheses and then call evaluate expression on it again
+    - stubbing it for now
+    2) basic precedence/conditional passes for /* and +-
+    
+    // STUBBING PARANTHESES 
+
+    */  
+
+    // PASS 1 STUBBED OUT
+
+    // Below is Pass 2 and 3 for /* and +- respectively
+
+    let newTokens: Token[] = [tokens[0]];
+
+    for (let i = 1; i < tokens.length; i+= 2) {
+      const operator = tokens[i];
+      const right = tokens[i+1];
+
+      if (operator.type === TokenType.Divide || operator.type === TokenType.Multiply) {
+        const leftVal = newTokens[newTokens.length - 1].value!;
+        const rightVal = right.value!;
+        const combined = (operator.type === TokenType.Multiply) ? leftVal * rightVal : leftVal / rightVal;
+        let combined_result: Token = {type: TokenType.Number, value: combined};
+
+        newTokens = [...newTokens.slice(0, -1), combined_result]; // replace right most term with combined result because it is being used in the /* operation
+      }
+
+      else {
+        newTokens = [...newTokens, operator, right];
+      } // if operator is +- we just append them as is to the newTokens array
+    }
+    tokens = newTokens;
+    // We now have an expression which only consists of +- operators as all the /* have been taken care of and placed back into the array in the order in which the operations should have occurred.
+
+    let [first, ...rest] = tokens;
+    let result = first.value!;
+    for (let i = 0; i < rest.length; i+=2) {
+      const op = rest[i].type;
+      const rightVal = rest[i+1].value!;
+
+      if (op === TokenType.Plus) {
+        result += rightVal;
+      }
+      else if (op === TokenType.Minus) {
+        result -= rightVal;
+      }
+    }
+    return result;
   }
 }
