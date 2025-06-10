@@ -10,10 +10,12 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  // Post method under /evaluate which reads the body of the json request under 'expression' field and returns the same thing. Only a function stub for now
+  // Post method `evaluate` under /evaluate which reads the body of the json request under 'expression' field and returns the same thing. Only a function stub for now
   @Post('evaluate')
   evaluate(@Body('expression')expr: string) {
   const result = this.appService.evaluateExpression(expr);
+  const tokens = this.appService.tokenizeExpression(expr);
+  console.log('TOKENS: ', tokens);
   return {result};
   }
 }

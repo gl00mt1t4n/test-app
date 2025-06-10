@@ -59,53 +59,45 @@ export class AppService {
         });
         continue;
       }
-      
+
       // general symbols
-      if (ch === '+') {
+      if (ch === "+") {
         tokens.push({
           type: TokenType.Plus,
         });
         i++;
         continue;
-      }
-      else if (ch === '-') {
+      } else if (ch === "-") {
         tokens.push({
           type: TokenType.Minus,
         });
         i++;
         continue;
-      }
-      else if (ch === '*') {
+      } else if (ch === "*") {
         tokens.push({
           type: TokenType.Multiply,
         });
         i++;
         continue;
-      }
-      else if (ch === '/') {
+      } else if (ch === "/") {
         tokens.push({
           type: TokenType.Divide,
         });
         i++;
         continue;
-      }
-      else if (ch === '(') {
+      } else if (ch === "(") {
         tokens.push({
           type: TokenType.LPar,
         });
         i++;
         continue;
-      }
-      else if (ch === ')') {
+      } else if (ch === ")") {
         tokens.push({
           type: TokenType.RPar,
         });
         i++;
         continue;
       }
-
-      
-
       // anything else should throw bad request error
       throw new BadRequestException(`Unknown Character ${ch}`);
     }
