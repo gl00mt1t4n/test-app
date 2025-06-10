@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from "@nestjs/common";
 
-// Types of characters we expect in the string. Either numbers or these symbols.
+// Types of characters we expect in the string. Either numbers or operator symbols.
 export enum TokenType {
   Number = "Number",
   Plus = "+",
@@ -17,10 +17,12 @@ export interface Token {
   value?: number;
 }
 
+// helper to check if string (character) is a digit
 function isDigit(ch: string): boolean {
   return ch >= "0" && ch <= "9";
 }
 
+// helper to check if a Token array has a left parantheses or not
 function containsLPar(tokens: Token[]): boolean {
   for (let i = 0; i < tokens.length; i++) {
     if (tokens[i].type === TokenType.LPar) {
@@ -40,12 +42,12 @@ export class AppService {
     let tokens: Token[] = [];
     let i = 0;
     while (i < expression.length) {
-      // RULES
-      // Skip spaces
-      // Throw error if not a number/symbol
-      // read numbers (including decimals, but implement it later)
-      // handle symbols if they are in TokenType
-
+      /*RULES
+      - Skip spaces
+      - Throw error if not a number/symbol
+      - read numbers (including decimals)
+      - handle symbols if they are in TokenType
+      */  
       let ch = expression[i];
 
       if (ch === " ") {
@@ -54,8 +56,7 @@ export class AppService {
         // skips whitespaces
       }
 
-      // digits
-      // it should work for consecutive digits as well
+      // Digits: Handles decimals as well as consecutive digits and wraps them all into a single TokenType.Number Token
       if (isDigit(ch) || (ch === "." && isDigit(expression[i + 1]))) {
         let numberString = "";
         let dotCount = 0;
@@ -83,7 +84,7 @@ export class AppService {
         continue;
       }
 
-      // general symbols
+      // Operator symbols
       if (ch === "+") {
         tokens.push({
           type: TokenType.Plus,
@@ -121,7 +122,7 @@ export class AppService {
         i++;
         continue;
       }
-      // anything else should throw bad request error
+      // Any other symbol should throw bad request error
       throw new BadRequestException(`Unknown character ${ch}`);
     }
 
@@ -132,28 +133,28 @@ export class AppService {
     // step 1 is to get the Token type array
     let tokens = this.tokenizeExpression(expression);
 
-    // our approach is going to be like so: 3 Passes over the tokenized array for parantheses, /*, +- with the function being called recursively inside each parantheses pair. We want only a single term to remain inside the parantheses, and eventually the entire term. We will use the ... operator to zip parantheses/operators into a single value
-
     /*
-    1) Parantheses:
-    - have a counter set to 0
-    - Left parantheses means counter += 1
-    - Right means counter -= 1
-    - if counter comes back to 0, zip the terms between open and close parantheses and then call evaluate expression on it again
-    2) basic precedence/conditional passes for /* and +-
-    
+    Approach: 3 Passes over the tokenized array. Parantheses, Multiplication/Division, Addition/Subtraction.
+    - The function is called recursively inside each parantheses pair. We want only a single term to remain inside the parantheses, and eventually the entire array.
+    - We use the ... operator to zip parantheses/operators into a single value after performing the operations on them
 
+    1) Parantheses:
+    - Check if Left Parantheses exists, if it does, match the last LPar with the first RPar.
+    - Goes from right most to left most parantheses, effectively going from innermost to outermost
+    - Slice all tokens inside the parantheses in a new array `innerTokens`
+    - Map the tokens back into an expression by joining them
+    - Call evaluate() recursively until each array has only a single value
+    - replace the paranthesized expression with the evaluated value
     */
 
     // PASS 1 for parantheses
     while (containsLPar(tokens)) {
       let types = tokens.map((t) => t.type); // inline function to get array of only token types
       let openIndex = types.lastIndexOf(TokenType.LPar);
-      // we now got the last open bracket, match it with the first closed bracket and keep evaluating
+      // last open bracket
 
       let closeIndex = types.indexOf(TokenType.RPar, openIndex + 1);
-      // checks for close parantheses only after last open bracket
-
+      // match first close bracket with last open bracket
       if (closeIndex === -1) {
         throw new BadRequestException("Missing closing parantheses");
       }
@@ -180,13 +181,22 @@ export class AppService {
 
     if (
       tokens.length === 0 || // nothing left
-      tokens.length % 2 === 0 || // even number of tokens → ends on operator
+      tokens.length % 2 === 0 || // can't have even number of tokens
       tokens[tokens.length - 1].type !== TokenType.Number // last token must be a number
     ) {
       throw new BadRequestException("Malformed expression");
     }
-    // Below is Pass 2 and 3 for /* and +- respectively
 
+    // After 1st Pass, we have removed all parantheses and only need to deal with operator precedences
+
+    /*
+    PASS 2: Multiplication/Division
+    - Make a new `newTokens` Token Array. Push the first value of tokens to it.
+    - If the 2nd element of tokens is / or * perform operation with right most element of newTokens and 3rd element of `tokens`
+    - If not, push the entire thing to the `newTokens`
+    - This ensures that all division/multiplication operations are carried out first
+    - If a division/multiplication is found after a series of +- replace the right most term of newTokens with the evaluated inner expression.
+    */
     let newTokens: Token[] = [tokens[0]];
 
     for (let i = 1; i < tokens.length; i += 2) {
@@ -215,7 +225,8 @@ export class AppService {
       } // if operator is +- we just append them as is to the newTokens array
     }
     tokens = newTokens;
-    // We now have an expression which only consists of +- operators as all the /* have been taken care of and placed back into the array in the order in which the operations should have occurred.
+    
+    // Only +- operations remaining. Same approach as PASS 2 but simpler.
 
     // PASS 3
     let [first, ...rest] = tokens;
