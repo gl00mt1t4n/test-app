@@ -1,5 +1,7 @@
 # test-app
 
+#### A simple calculator fullstack app with backend deployed in nest.js and frontend deployed using Vita. I have written the logic to handle calculations (i.e Operator Precedences /  BODMAS) as well without relying on any third party modules such as eval()
+
 1. Clone the repo using `git clone https://github.com/gl00mt1t4n/test-app.git`
 2. `cd test-app`
 3. Run the Backend  

@@ -47,13 +47,57 @@ export class AppService {
       - Throw error if not a number/symbol
       - read numbers (including decimals)
       - handle symbols if they are in TokenType
-      */  
+      */
       let ch = expression[i];
 
       if (ch === " ") {
         i++;
         continue;
         // skips whitespaces
+      }
+
+      // 1) Signed numbers: '-' or '+' as part of a number
+      const prevType = tokens.length ? tokens[tokens.length - 1].type : null;
+      const canBeUnary =
+        prevType === null ||
+        prevType === TokenType.Plus ||
+        prevType === TokenType.Minus ||
+        prevType === TokenType.Multiply ||
+        prevType === TokenType.Divide ||
+        prevType === TokenType.LPar;
+
+      if (
+        (ch === "-" || ch === "+") &&
+        canBeUnary &&
+        i + 1 < expression.length &&
+        (isDigit(expression[i + 1]) || expression[i + 1] === ".")
+      ) {
+        // Consume the sign
+        let numberString = ch;
+        i++;
+
+        // Now read digits and at most one decimal point
+        let dotCount = 0;
+        while (
+          i < expression.length &&
+          (isDigit(expression[i]) || expression[i] === ".")
+        ) {
+          if (expression[i] === ".") {
+            dotCount++;
+            if (dotCount > 1) {
+              throw new BadRequestException(
+                `Invalid number format near '${numberString}.'`
+              );
+            }
+          }
+          numberString += expression[i++];
+        }
+
+        tokens.push({
+          type: TokenType.Number,
+          value: parseFloat(numberString),
+        });
+        continue;
       }
 
       // Digits: Handles decimals as well as consecutive digits and wraps them all into a single TokenType.Number Token
@@ -211,7 +255,7 @@ export class AppService {
         const rightVal = right.value!;
         if (operator.type === TokenType.Divide) {
           if (rightVal === 0) {
-            throw new BadRequestException('Division by 0 is infinity')
+            throw new BadRequestException("Division by 0 is infinity");
           }
         }
         const combined =
@@ -230,7 +274,7 @@ export class AppService {
       } // if operator is +- we just append them as is to the newTokens array
     }
     tokens = newTokens;
-    
+
     // Only +- operations remaining. Same approach as PASS 2 but simpler.
 
     // PASS 3

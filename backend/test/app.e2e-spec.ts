@@ -86,6 +86,21 @@ describe("Calculator (AppController) E2E for POST/evaluate", () => {
       .expect((res) => {
         expect(res.body.message).toMatch(/Division by 0 is infinity/);
       }));
+      
+  it("should handle unary minus division", () =>
+    evaluate("-1/-1")
+      .expect(201)
+      .expect((res) => {
+        expect(res.body).toEqual({ result: 1 });
+      }));
+
+  it("should handle mixed unary signs with multiplication and division", () =>
+    evaluate("-1*+5/-5")
+      .expect(201)
+      .expect((res) => {
+        // -1 * +5 = -5, then -5 / -5 = 1
+        expect(res.body).toEqual({ result: 1 });
+      }));
 
   it("/ (GET)", () => {
     return request(app.getHttpServer())
